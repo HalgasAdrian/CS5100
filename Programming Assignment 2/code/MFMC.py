@@ -82,13 +82,31 @@ def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=0.999):
     - Q_table (dict): Dictionary containing the Q-values for each state-action pair.
     """
 	Q_table = {}
+	num_updates = {}
 
-	'''
+	for episode in range(num_episodes):
+		obs = env.reset()
+		done = False
 
-	YOUR CODE HERE
+		while not done:
+			state = hash(obs)
+			if state not in Q_table:
+				Q_table[state] = {i: 0 for i in range(6)}  # Initialize Q-values for each action in the state
+			
+			# Epsilon-greedy action selection
+			if np.random.rand() < epsilon:
+				action = np.random.choice(list(Q_table[state].keys()))
+			else:
+				action = max(Q_table[state], key=Q_table[state].get)
+			
+			# Take our action and observe the results
+			next_obs, reward, done, info = env.step(action)
+			next_state = hash(next_obs)
+			if next_state not in Q_table:
+				Q_table[next_state] = {i: 0 for i in range(6)}
+                
+			
 
-
-	'''
 
 	return Q_table
 
