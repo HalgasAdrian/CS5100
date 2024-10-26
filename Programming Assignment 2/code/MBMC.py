@@ -2,7 +2,7 @@ import time
 import numpy as np
 from vis_gym import *
 
-gui_flag = False # Set to True to enable the game state visualization
+gui_flag = True # Set to True to enable the game state visualization
 setup(GUI=gui_flag)
 env = game # Gym environment already initialized within vis_gym.py
 
@@ -74,25 +74,30 @@ def estimate_victory_probability(num_episodes=100000):
 	#P = np.zeros(len(env.guards))
 
 	# Initialize counters for guard encounters and victories
-	guard_encounters = np.zeros(len(env.guards))
-	guard_victories = np.zeros(len(env.guards))
+	guard_encounters = np.zeros(4)
+	guard_victories = np.zeros(4)
 
 	# Run the number of episodes
 	for _ in range(num_episodes):
-		state = env.reset() # Reset env to start new episode
+		obs = env.reset() # Reset env to start new episode
 		done = False
 
 		while not done:
 			action = env.action_space.sample() # Random action
-			next_state, reward, done, info = env.step(action) # Taking our random action
+			next_obs, reward, done, info = env.step(action) # Taking our random action
+
+			if gui_flag:
+				refresh(obs, reward, done, info) # GUI refresh
 
 			# Check if action was a fight and record result
-			if action == FIGHT and 'guard' in info:
-				guard_id = int(info['guard'][1]) - 1 # Extracting guard identifier
+			if action == 'FIGHT' and obs['guard_in_cell']:
+				guard_id = int(obs['guard_in_cell'][1]) - 1 # Extracting guard identifier
 				guard_encounters[guard_id] += 1
 
 				if reward > 0: 
 					guard_victories[guard_id] += 1
+
+			obs = next_obs
 	
 	P = guard_victories / np.maximum(guard_encounters, 1)
 
