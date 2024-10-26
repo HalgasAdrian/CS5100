@@ -104,9 +104,24 @@ def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=0.999):
 			next_state = hash(next_obs)
 			if next_state not in Q_table:
 				Q_table[next_state] = {i: 0 for i in range(6)}
-                
 			
+			# Update the Q-value using the Q-learning update rule
+			best_next_action = max(Q_table[next_state], key=Q_table[next_state].get)
+			if (state, action) not in num_updates:
+				num_updates[(state, action)] = 0
+			num_updates[(state, action)] += 1
+			eta = 1 / (1 + num_updates[(state, action)])
 
+			Q_table[state][action] = (1 - eta) * Q_table[state][action] + eta * (reward + gamma * Q_table[next_state][best_next_action])
+
+			# GUI refresh if enabled
+			if gui_flag:
+				refresh(obs, reward, done, info)
+			
+			obs = next_obs
+		
+		# Decay epsilon
+		epsilon *= decay_rate
 
 	return Q_table
 
