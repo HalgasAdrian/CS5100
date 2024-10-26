@@ -71,14 +71,30 @@ def estimate_victory_probability(num_episodes=100000):
     Returns:
     - P (numpy array): Empirically estimated probability of defeating guards 1-4.
     """
-	P = np.zeros(len(env.guards))
+	#P = np.zeros(len(env.guards))
 
-	'''
+	# Initialize counters for guard encounters and victories
+	guard_encounters = np.zeros(len(env.guards))
+	guard_victories = np.zeros(len(env.guards))
 
-	YOUR CODE HERE
+	# Run the number of episodes
+	for _ in range(num_episodes):
+		state = env.reset() # Reset env to start new episode
+		done = False
 
+		while not done:
+			action = env.action_space.sample() # Random action
+			next_state, reward, done, info = env.step(action) # Taking our random action
 
-	'''
+			# Check if action was a fight and record result
+			if action == FIGHT and 'guard' in info:
+				guard_id = int(info['guard'][1]) - 1 # Extracting guard identifier
+				guard_encounters[guard_id] += 1
+
+				if reward > 0: 
+					guard_victories[guard_id] += 1
+	
+	P = guard_victories / np.maximum(guard_encounters, 1)
 
 	return P
 
