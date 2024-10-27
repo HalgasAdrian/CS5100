@@ -86,6 +86,9 @@ def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=0.999):
 
 	for episode in range(num_episodes):
 		obs = env.reset()
+		if not isinstance(obs, dict):
+			raise TypeError(f"Expected a dictionary for obs, got {type(obs)}")
+
 		done = False
 
 		while not done:
@@ -101,6 +104,9 @@ def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=0.999):
 			
 			# Take our action and observe the results
 			next_obs, reward, done, info = env.step(action)
+			if not isinstance(next_obs, dict):
+				raise TypeError(f"Expected a dictionary for next_obs, got {type(next_obs)}")
+			
 			next_state = hash(next_obs)
 			if next_state not in Q_table:
 				Q_table[next_state] = {i: 0 for i in range(6)}
@@ -113,19 +119,19 @@ def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=0.999):
 			eta = 1 / (1 + num_updates[(state, action)])
 
 			Q_table[state][action] = (1 - eta) * Q_table[state][action] + eta * (reward + gamma * Q_table[next_state][best_next_action])
+			
+			# GUI refresh
+			obs = next_obs
 
-			# GUI refresh if enabled
 			if gui_flag:
 				refresh(obs, reward, done, info)
-			
-			obs = next_obs
 		
 		# Decay epsilon
 		epsilon *= decay_rate
 
 	return Q_table
 
-decay_rate = ''' YOUR DECAY RATE HERE '''
+decay_rate = 0.999
 
 Q_table = Q_learning(num_episodes=1000000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
 
