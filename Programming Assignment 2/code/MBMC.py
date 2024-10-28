@@ -61,7 +61,7 @@ Complete the function below to do the following:
 
 '''
 
-def estimate_victory_probability(num_episodes=100000):
+def estimate_victory_probability(num_episodes=1000000):
 	"""
     Probability estimator
 
