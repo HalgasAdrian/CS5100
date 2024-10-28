@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 from vis_gym import *
 
-gui_flag = True # Set to True to enable the game state visualization
+gui_flag = False # Set to True to enable the game state visualization
 setup(GUI=gui_flag)
 env = game # Gym environment already initialized within vis_gym.py
 
@@ -85,11 +85,11 @@ def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=0.999):
     num_updates = {}
 
     for episode in range(num_episodes):
-        results = env.reset()  # This may be returning more than just 'obs'
+        results = env.reset()
         if not isinstance(results, tuple) or not isinstance(results[0], dict):
             raise TypeError(f"Expected a tuple with a dictionary for obs, got {type(results)}")
 
-        obs = results[0]  # Assuming 'reset()' returns (obs, reward, done, info)
+        obs = results[0]  # 'reset()' returns (obs, reward, done, info)
         done = False
 
         while not done:
