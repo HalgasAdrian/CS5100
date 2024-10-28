@@ -69,7 +69,7 @@ Complete the function below to do the following:
 '''
 
 def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=0.999):
-	"""
+    """
 	Run Q-learning algorithm for a specified number of episodes.
 
     Parameters:
@@ -81,55 +81,52 @@ def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=0.999):
     Returns:
     - Q_table (dict): Dictionary containing the Q-values for each state-action pair.
     """
-	Q_table = {}
-	num_updates = {}
+    Q_table = {}
+    num_updates = {}
 
-	for episode in range(num_episodes):
-		obs = env.reset()
-		if not isinstance(obs, dict):
-			raise TypeError(f"Expected a dictionary for obs, got {type(obs)}")
+    for episode in range(num_episodes):
+        results = env.reset()  # This may be returning more than just 'obs'
+        if not isinstance(results, tuple) or not isinstance(results[0], dict):
+            raise TypeError(f"Expected a tuple with a dictionary for obs, got {type(results)}")
 
-		done = False
+        obs = results[0]  # Assuming 'reset()' returns (obs, reward, done, info)
+        done = False
 
-		while not done:
-			state = hash(obs)
-			if state not in Q_table:
-				Q_table[state] = {i: 0 for i in range(6)}  # Initialize Q-values for each action in the state
-			
-			# Epsilon-greedy action selection
-			if np.random.rand() < epsilon:
-				action = np.random.choice(list(Q_table[state].keys()))
-			else:
-				action = max(Q_table[state], key=Q_table[state].get)
-			
-			# Take our action and observe the results
-			next_obs, reward, done, info = env.step(action)
-			if not isinstance(next_obs, dict):
-				raise TypeError(f"Expected a dictionary for next_obs, got {type(next_obs)}")
-			
-			next_state = hash(next_obs)
-			if next_state not in Q_table:
-				Q_table[next_state] = {i: 0 for i in range(6)}
-			
-			# Update the Q-value using the Q-learning update rule
-			best_next_action = max(Q_table[next_state], key=Q_table[next_state].get)
-			if (state, action) not in num_updates:
-				num_updates[(state, action)] = 0
-			num_updates[(state, action)] += 1
-			eta = 1 / (1 + num_updates[(state, action)])
+        while not done:
+            state = hash(obs)
+            if state not in Q_table:
+                Q_table[state] = {i: 0 for i in range(6)}
 
-			Q_table[state][action] = (1 - eta) * Q_table[state][action] + eta * (reward + gamma * Q_table[next_state][best_next_action])
-			
-			# GUI refresh
-			obs = next_obs
+            if np.random.rand() < epsilon:
+                action = np.random.choice(list(Q_table[state].keys()))
+            else:
+                action = max(Q_table[state], key=Q_table[state].get)
 
-			if gui_flag:
-				refresh(obs, reward, done, info)
-		
-		# Decay epsilon
-		epsilon *= decay_rate
+            results = env.step(action)
+            if not isinstance(results, tuple) or not isinstance(results[0], dict):
+                raise TypeError(f"Expected a tuple with a dictionary for next_obs, got {type(results)}")
 
-	return Q_table
+            next_obs, reward, done, info = results
+            next_state = hash(next_obs)
+            if next_state not in Q_table:
+                Q_table[next_state] = {i: 0 for i in range(6)}
+
+            best_next_action = max(Q_table[next_state], key=Q_table[next_state].get)
+            if (state, action) not in num_updates:
+                num_updates[(state, action)] = 0
+            num_updates[(state, action)] += 1
+            eta = 1 / (1 + num_updates[(state, action)])
+
+            Q_table[state][action] = (1 - eta) * Q_table[state][action] + eta * (reward + gamma * Q_table[next_state][best_next_action])
+
+            obs = next_obs  # Update obs for the next loop iteration
+
+            if gui_flag:
+                refresh(obs, reward, done, info)
+
+        epsilon *= decay_rate
+
+    return Q_table
 
 decay_rate = 0.999
 
