@@ -69,6 +69,15 @@ Complete the function below to do the following:
 '''
 
 def Q_learning(num_episodes=1000000, gamma=0.9, epsilon=1, decay_rate=0.999999):
+    """
+    Run Q-learning algorithm for a specified number of episodes.
+    - num_episodes (int): Number of episodes to run.
+    - gamma (float): Discount factor.
+    - epsilon (float): Exploration rate.
+    - decay_rate (float): Rate at which epsilon decays.
+    Returns:
+    - Q_table (dict): Dictionary containing the Q-values for each state-action pair.
+    """
     Q_table = {}
     num_updates = {}
 
@@ -81,8 +90,10 @@ def Q_learning(num_episodes=1000000, gamma=0.9, epsilon=1, decay_rate=0.999999):
             if state not in Q_table:
                 Q_table[state] = np.zeros(env.action_space.n)
 
-            action = np.random.choice(np.arange(env.action_space.n)) if np.random.rand() < epsilon \
-                else np.argmax(Q_table[state])
+            if np.random.rand() < epsilon:
+                action = np.random.choice(np.arange(env.action_space.n))
+            else:
+                action = np.argmax(Q_table[state])
 
             next_obs, reward, done, info = env.step(action)
             next_state = hash(next_obs)
@@ -90,15 +101,19 @@ def Q_learning(num_episodes=1000000, gamma=0.9, epsilon=1, decay_rate=0.999999):
                 Q_table[next_state] = np.zeros(env.action_space.n)
 
             best_next_action = np.argmax(Q_table[next_state])
-            num_updates[state] = num_updates.get(state, 0) + 1
-            eta = 1 / (1 + num_updates[state])
+            if state not in num_updates:
+                num_updates[state] = np.zeros(env.action_space.n)
+            num_updates[state][action] += 1
+            eta = 1 / (1 + num_updates[state][action])
 
-            Q_table[state][action] = (1 - eta) * Q_table[state][action] + eta * (reward + gamma * Q_table[next_state][best_next_action])
+            Q_table[state][action] += eta * (reward + gamma * Q_table[next_state][best_next_action] - Q_table[state][action])
 
             obs = next_obs
 
         epsilon *= decay_rate
-        if episode % 1000 == 0:
+        if epsilon < 0.01:
+            epsilon = 0.01  # Maintain a minimum level of exploration
+        if episode % 100 == 0:
             print(f"Episode {episode} completed with epsilon {epsilon}")
 
     return Q_table
