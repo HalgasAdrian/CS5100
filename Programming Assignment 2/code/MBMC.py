@@ -62,44 +62,45 @@ Complete the function below to do the following:
 '''
 
 def estimate_victory_probability(num_episodes=1000000):
-	"""
-    Probability estimator
+    guard_encounters = np.zeros(4)
+    guard_victories = np.zeros(4)
 
-    Parameters:
-    - num_episodes (int): Number of episodes to run.
+    fight_action_index = 4  # 'FIGHT' action is numerically indexed as 4
 
-    Returns:
-    - P (numpy array): Empirically estimated probability of defeating guards 1-4.
-    """
-	#P = np.zeros(len(env.guards))
+    for _ in range(num_episodes):
+        result = env.reset()
+        obs = result if isinstance(result, dict) else result[0]
+        done = False
 
-	# Initialize counters for guard encounters and victories
-	guard_encounters = np.zeros(4)
-	guard_victories = np.zeros(4)
+        while not done:
+            # Bias the action selection towards fighting if a guard is present in the cell
+            if obs.get('guard_in_cell'):
+                action = fight_action_index
+            else:
+                action = env.action_space.sample()  # Otherwise, sample a random action
 
-	# Run the number of episodes
-	for _ in range(num_episodes):
-		obs = env.reset() # Reset env to start new episode
-		done = False
+            result = env.step(action)
+            next_obs, reward, done, info = result if isinstance(result, tuple) else (result, 0, True, {})
 
-		while not done:
-			action = env.action_space.sample() # Random action
-			next_obs, reward, done, info = env.step(action) # Taking our random action
+            if gui_flag:
+                refresh(obs, reward, done, info)  # GUI refresh
 
-			if gui_flag:
-				refresh(obs, reward, done, info) # GUI refresh
+            print(f"Action taken: {action}, Guard in cell: {obs.get('guard_in_cell', 'None')}, Reward: {reward}")
 
-			# Check if action was a fight and record result
-			if action == 'FIGHT' and obs['guard_in_cell']:
-				guard_id = int(obs['guard_in_cell'][1]) - 1 # Extracting guard identifier
-				guard_encounters[guard_id] += 1
+            if action == fight_action_index and obs.get('guard_in_cell'):
+                guard_id = int(obs['guard_in_cell'][1]) - 1
+                guard_encounters[guard_id] += 1
 
-				if reward > 0: 
-					guard_victories[guard_id] += 1
+                if reward > 0:
+                    guard_victories[guard_id] += 1
 
-			obs = next_obs
-	
-	P = guard_victories / np.maximum(guard_encounters, 1)
+            obs = next_obs  # Update obs for the next iteration
 
-	return P
+    P = guard_victories / np.maximum(guard_encounters, 1)
+    return P
+
+probabilities = estimate_victory_probability(1000000)
+print("Estimated probabilities of defeating each guard:", probabilities)
+
+
 
