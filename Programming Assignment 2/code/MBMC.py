@@ -61,7 +61,7 @@ Complete the function below to do the following:
 
 '''
 
-def estimate_victory_probability(num_episodes=1000000):
+def estimate_victory_probability(num_episodes=200000):
     guard_encounters = np.zeros(4)
     guard_victories = np.zeros(4)
 
@@ -99,7 +99,7 @@ def estimate_victory_probability(num_episodes=1000000):
     P = guard_victories / np.maximum(guard_encounters, 1)
     return P
 
-probabilities = estimate_victory_probability(1000000)
+probabilities = estimate_victory_probability(200000)
 print("Estimated probabilities of defeating each guard:", probabilities)
 
 
