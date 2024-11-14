@@ -76,6 +76,8 @@ and are using the same number of epochs, but it is not recommended for this assi
 
 '''
 
+losses_ffn = [] # Tracking FNN loss.
+
 num_epochs_ffn = 10 # Starting with 10, adjust based on results.
 
 for epoch in range(num_epochs_ffn):  # loop over the dataset multiple times
@@ -97,6 +99,7 @@ for epoch in range(num_epochs_ffn):  # loop over the dataset multiple times
         loss.backward()
         optimizer_ffn.step()
         running_loss_ffn += loss.item()
+        losses_ffn.append(loss.item())  # Save loss for each batch
 
     print(f"Training loss: {running_loss_ffn}")
 
@@ -104,6 +107,7 @@ print('Finished Training')
 
 torch.save(feedforward_net.state_dict(), 'ffn.pth')  # Saves model file (upload with submission)
 
+losses_cnn = [] # Tracking CNN loss.
 
 num_epochs_cnn = 10 # Starting with 10, adjust based on our results.
 
@@ -123,6 +127,7 @@ for epoch in range(num_epochs_cnn):  # loop over the dataset multiple times
         loss.backward()
         optimizer_cnn.step()
         running_loss_cnn += loss.item()
+        losses_cnn.append(loss.item())  # Save loss for each batch
 
     print(f"Training loss: {running_loss_cnn}")
 
@@ -233,19 +238,19 @@ def plot_correct_and_incorrect(model, model_name, data_loader, classes, is_ffn=F
     plot_correct_and_incorrect(conv_net, "Convolutional Network", testloader, classes, is_ffn=False)  # CNN
 
 
-losses_ffn = []
-losses_cnn = []
+#losses_ffn = []
+#losses_cnn = []
 
 # During FFN training
-losses_ffn.append(running_loss_ffn / len(trainloader))
+#losses_ffn.append(running_loss_ffn / len(trainloader))
 
 # During CNN training
-losses_cnn.append(running_loss_cnn / len(trainloader))
+#losses_cnn.append(running_loss_cnn / len(trainloader))
 
 def plot_loss_curve(losses, model_name):
     plt.figure(figsize=(8, 6))
-    plt.plot(losses, marker='o', linestyle='-', label=f'{model_name} Loss')
-    plt.xlabel('Epoch')
+    plt.plot(range(1, len(losses) + 1), losses, marker='o', linestyle='-', label=f'{model_name} Loss')
+    plt.xlabel('Batch Iterations')  # Number of batches passed
     plt.ylabel('Loss')
     plt.title(f'{model_name} Training Loss Over Time')
     plt.legend()
