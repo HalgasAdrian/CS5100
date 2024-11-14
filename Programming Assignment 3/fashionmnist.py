@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from cnn import *
 from ffn import *
+import matplotlib.pyplot as plt
 
 '''
 
@@ -29,7 +30,7 @@ transform = transforms.Compose([                            # Use transforms to 
     transforms.Normalize(mean=[0.5], std=[0.5])             # Common method for grayscale images
 ])
 
-batch_size = ''' Insert a good batch size number here '''
+batch_size = 64
 
 
 '''
@@ -39,12 +40,11 @@ Load the dataset. Make sure to utilize the transform and batch_size from the las
 
 '''
 
-trainset = torchvision.datasets.FashionMNIST(''' Fill in this function ''')
-trainloader = torch.utils.data.DataLoader(''' Fill in this function ''')
+trainset = torchvision.datasets.FashionMNIST(root='./data', train=True, download=True, transform=transform)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True)
 
-testset = torchvision.datasets.FashionMNIST(''' Fill in this function ''')
-testloader = torch.utils.data.DataLoader(''' Fill in this function ''')
-
+testset = torchvision.datasets.FashionMNIST(root='./data', train=False, download=True, transform=transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False)
 
 '''
 
@@ -53,11 +53,8 @@ Complete the model defintion classes in ffn.py and cnn.py. We instantiate the mo
 
 '''
 
-
 feedforward_net = FF_Net()
 conv_net = Conv_Net()
-
-
 
 '''
 
@@ -66,12 +63,10 @@ Choose a good loss function and optimizer - you can use the same loss for both n
 
 '''
 
-criterion = ''' Choose a good loss function '''
+criterion = nn.CrossEntropyLoss()
 
-optimizer_ffn = ''' Choose a good optimizer and its hyperparamters for the feedforward network'''
-optimizer_cnn = ''' Choose a good optimizer and its hyperparamters for the convolutional network'''
-
-
+optimizer_ffn = optim.Adam(feedforward_net.parameters(), lr=0.001)
+optimizer_cnn = optim.Adam(conv_net.parameters(), lr=0.001)
 
 '''
 
@@ -81,8 +76,7 @@ and are using the same number of epochs, but it is not recommended for this assi
 
 '''
 
-
-num_epochs_ffn = '''Choose the number of epochs for the feedforward network'''
+num_epochs_ffn = 10 # Starting with 10, adjust based on results.
 
 for epoch in range(num_epochs_ffn):  # loop over the dataset multiple times
     running_loss_ffn = 0.0
@@ -92,15 +86,14 @@ for epoch in range(num_epochs_ffn):  # loop over the dataset multiple times
         inputs, labels = data
 
         # Flatten inputs for ffn
-
-        ''' YOUR CODE HERE '''
+        inputs = inputs.view(inputs.size(0), -1)
 
         # zero the parameter gradients
         optimizer_ffn.zero_grad()
 
         # forward + backward + optimize
         outputs = feedforward_net(inputs)
-        loss = criterion(outputs, '''YOUR CODE HERE''')
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer_ffn.step()
         running_loss_ffn += loss.item()
@@ -112,7 +105,7 @@ print('Finished Training')
 torch.save(feedforward_net.state_dict(), 'ffn.pth')  # Saves model file (upload with submission)
 
 
-num_epochs_cnn = '''Choose the number of epochs for the convolutional network'''
+num_epochs_cnn = 10 # Starting with 10, adjust based on our results.
 
 for epoch in range(num_epochs_cnn):  # loop over the dataset multiple times
     running_loss_cnn = 0.0
@@ -126,7 +119,7 @@ for epoch in range(num_epochs_cnn):  # loop over the dataset multiple times
 
         # forward + backward + optimize
         outputs = conv_net(inputs)
-        loss = criterion(outputs, '''YOUR CODE HERE''')
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer_cnn.step()
         running_loss_cnn += loss.item()
@@ -136,7 +129,6 @@ for epoch in range(num_epochs_cnn):  # loop over the dataset multiple times
 print('Finished Training')
 
 torch.save(conv_net.state_dict(), 'cnn.pth')  # Saves model file (upload with submission)
-
 
 '''
 
@@ -158,12 +150,20 @@ total_cnn = 0
 
 with torch.no_grad():           # since we're not training, we don't need to calculate the gradients for our outputs
     for data in testloader:
+        inputs, labels = data
 
-        '''
-        
-            YOUR CODE HERE
+        # Evaluating the FFN
+        inputs_ffn = inputs.view(inputs.size(0), -1)  # Flatten for FFN
+        outputs_ffn = feedforward_net(inputs_ffn)
+        _, predicted_ffn = torch.max(outputs_ffn, 1)
+        total_ffn += labels.size(0)
+        correct_ffn += (predicted_ffn == labels).sum().item()
 
-        '''
+        # Evaluating the CNN
+        outputs_cnn = conv_net(inputs)
+        _, predicted_cnn = torch.max(outputs_cnn, 1)
+        total_cnn += labels.size(0)
+        correct_cnn += (predicted_cnn == labels).sum().item()
 
 print('Accuracy for feedforward network: ', correct_ffn/total_ffn)
 print('Accuracy for convolutional network: ', correct_cnn/total_cnn)
@@ -176,9 +176,60 @@ PART 7:
 Check the instructions PDF. You need to generate some plots. 
 
 '''
+def plot_correct_and_incorrect(model, model_name, data_loader, classes, is_ffn=False):
+    model.eval()  # Setting our model to evaluation mode.
+    correct_found = False
+    incorrect_found = False
+    correct_image = None
+    correct_pred = None
+    correct_label = None
+    incorrect_image = None
+    incorrect_pred = None
+    incorrect_label = None
 
-'''
+    with torch.no_grad():
+        for images, labels in data_loader:
+            if is_fnn:
+                images_flat = images.view(images.size(0), -1)  # Flatten for FFN
+                outputs = model(images_flat)
+            else:
+                outputs = model(images)
+            
+            _, predictions = torch.max(outputs, 1)
 
-YOUR CODE HERE
+            for i in range(len(predictions)):
+                if predictions[i] == labels[i] and not correct_found:
+                    correct_image = images[i]
+                    correct_pred = predictions[i].item()
+                    correct_label = labels[i].item()
+                    correct_found = True
+                elif predictions[i] != labels[i] and not incorrect_found:
+                    incorrect_image = images[i]
+                    incorrect_pred = predictions[i].item()
+                    incorrect_label = labels[i].item()
+                    incorrect_found = True
+                
+                if correct_found and incorrect_found:
+                     break
+            if correct_found and incorrect_found:
+                break
 
-'''
+    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+    axs[0].imshow(correct_image.squeeze(), cmap='gray')
+    axs[0].set_title(f"Correctly Classified\nTrue: {classes[correct_label]}, Pred: {classes[correct_pred]}")
+    axs[0].axis('off')
+    
+    axs[1].imshow(incorrect_image.squeeze(), cmap='gray')
+    axs[1].set_title(f"Incorrectly Classified\nTrue: {classes[incorrect_label]}, Pred: {classes[incorrect_pred]}")
+    axs[1].axis('off')
+
+    # Class names for Fashion-MNIST
+    classes = [
+    "T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", 
+    "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"
+]
+    # Call the function for both of our networks.
+    plot_correct_and_incorrect(feedforward_net, "Feedforward Network", testloader, classes, is_ffn=True)
+    plot_correct_and_incorrect(conv_net, "Convolutional Network", testloader, classes)  
+
+
