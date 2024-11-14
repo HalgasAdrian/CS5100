@@ -48,7 +48,11 @@ plt.show()
 
 # Apply the kernel to the provided sample image.
 
-img = cv2.imread('sample_image.png', cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('/Users/adrianhalgas/Documents/GitHub/CS5100/Programming Assignment 3/sample_image.png', cv2.IMREAD_GRAYSCALE)
+
+if img is None:
+    raise FileNotFoundError("Image file not found, check path.")
+
 img = cv2.resize(img, (28, 28))
 img = img / 255.0					# Normalize the image
 img = torch.tensor(img).float()
