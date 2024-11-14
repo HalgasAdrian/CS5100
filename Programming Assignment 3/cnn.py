@@ -30,8 +30,30 @@ https://pytorch.org/docs/stable/index.html, and will specify whether a given los
 
 class Conv_Net(nn.Module):
     def __init__(self):
-        super().__init__()
+        super(Conv_Net, self).__init__()
+
+        # Defining the layers of our CNN.
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)  # First convolutional layer
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)  # Max pooling layer
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1)  # Second convolutional layer
+
+        # Fully connected layers.
+        self.fc1 = nn.Linear(64 * 7 * 7, 128)  # 7x7 comes from pooling on 28x28 -> 14x14 -> 7x7
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 10)  # Output layer for 10 classes
 
     def forward(self, x):
+
+        # Forward pass through the network
+        x = F.relu(self.conv1(x))  # First convolutional layer + ReLU
+        x = self.pool(x)           # Pooling layer
+        x = F.relu(self.conv2(x))  # Second convolutional layer + ReLU
+        x = self.pool(x)           # Pooling layer
+        
+        x = x.view(-1, 64 * 7 * 7)  # Flatten the tensor for the fully connected layers
+        x = F.relu(self.fc1(x))     # First fully connected layer + ReLU
+        x = F.relu(self.fc2(x))     # Second fully connected layer + ReLU
+        x = self.fc3(x)             # Output layer (no activation, handled by loss function)
+        
         return x
         
