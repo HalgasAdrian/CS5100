@@ -189,7 +189,7 @@ def plot_correct_and_incorrect(model, model_name, data_loader, classes, is_ffn=F
 
     with torch.no_grad():
         for images, labels in data_loader:
-            if is_fnn:
+            if is_ffn:
                 images_flat = images.view(images.size(0), -1)  # Flatten for FFN
                 outputs = model(images_flat)
             else:
@@ -227,9 +227,11 @@ def plot_correct_and_incorrect(model, model_name, data_loader, classes, is_ffn=F
     classes = [
     "T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", 
     "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
-    # Call the function for both of our networks.
-    plot_correct_and_incorrect(feedforward_net, "Feedforward Network", testloader, classes, is_ffn=True)
-    plot_correct_and_incorrect(conv_net, "Convolutional Network", testloader, classes)  
+    
+    # Call function for both networks
+    plot_correct_and_incorrect(feedforward_net, "Feedforward Network", testloader, classes, is_ffn=True)  # FFN
+    plot_correct_and_incorrect(conv_net, "Convolutional Network", testloader, classes, is_ffn=False)  # CNN
+
 
 losses_ffn = []
 losses_cnn = []
