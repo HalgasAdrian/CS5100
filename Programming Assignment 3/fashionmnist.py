@@ -226,10 +226,30 @@ def plot_correct_and_incorrect(model, model_name, data_loader, classes, is_ffn=F
     # Class names for Fashion-MNIST
     classes = [
     "T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", 
-    "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"
-]
+    "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
     # Call the function for both of our networks.
     plot_correct_and_incorrect(feedforward_net, "Feedforward Network", testloader, classes, is_ffn=True)
     plot_correct_and_incorrect(conv_net, "Convolutional Network", testloader, classes)  
 
+losses_ffn = []
+losses_cnn = []
 
+# During FFN training
+losses_ffn.append(running_loss_ffn / len(trainloader))
+
+# During CNN training
+losses_cnn.append(running_loss_cnn / len(trainloader))
+
+def plot_loss_curve(losses, model_name):
+    plt.figure(figsize=(8, 6))
+    plt.plot(losses, marker='o', linestyle='-', label=f'{model_name} Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(f'{model_name} Training Loss Over Time')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+# Plot for each model
+plot_loss_curve(losses_ffn, "Feedforward Network")
+plot_loss_curve(losses_cnn, "Convolutional Network")
