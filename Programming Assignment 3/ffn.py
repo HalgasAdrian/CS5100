@@ -34,7 +34,7 @@ class FF_Net(nn.Module):
         x = F.relu(self.fc1(x)) # Apply ReLU activation.
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
-        x = self.fc1(x)  # No activation on output layer because it is handled by loss function.
+        x = self.fc4(x)  # No activation on output layer because it is handled by loss function.
 
         return x
         

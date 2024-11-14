@@ -86,7 +86,7 @@ for epoch in range(num_epochs_ffn):  # loop over the dataset multiple times
         inputs, labels = data
 
         # Flatten inputs for ffn
-        inputs = inputs.view(inputs.size(0), -1)
+        inputs = inputs.view(inputs.size(0), -1)  # Flatten inputs to shape (batch_size, 784)
 
         # zero the parameter gradients
         optimizer_ffn.zero_grad()
