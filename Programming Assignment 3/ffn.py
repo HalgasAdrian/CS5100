@@ -21,8 +21,20 @@ requires normalized outputs or not.
 
 class FF_Net(nn.Module):
     def __init__(self):
-        super().__init__()
+        super(FF_Net, self).__init__()
+
+        # Setting up a simple feedforward network.
+        self.fc1 = nn.Linear(784, 256) # First fully connected layer.
+        self.fc2 = nn.Linear(256, 128) # Second fully connected layer.
+        self.fc3 = nn.Linear(128, 64) # Third fully connected layer.
+        self.fc4 = nn.Linear(64, 10) # Output layer for 10 classes.
 
     def forward(self, x):
+        # Forward pass through the network.
+        x = F.relu(self.fc1(x)) # Apply ReLU activation.
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        x = self.fc1(x)  # No activation on output layer because it is handled by loss function.
+
         return x
         
